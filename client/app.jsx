@@ -34,97 +34,125 @@ class Login extends React.Component {
 
 }
 
+class MessageList extends React.Component {
+    constructor(props) {
+        super(props)
+    }
+
+    render() {
+        return (
+            <ul>
+                {
+                    this.props.data.map(msg=> {
+                        let username = msg.user._id == this.props.userId ? msg.user.username + '(me)' : msg.user.username;
+                        return (
+                            <li key={msg._id}>
+                                <span>{username}</span><br/>
+                                <span>{msg.message}</span>
+                            </li>
+                        )
+                    })
+                }
+            </ul>
+        )
+    }
+}
 class Chat extends React.Component {
-    constructor (props) {
+    constructor(props) {
         super(props)
 
         this.state = {
             userList: this.props.userList,
             messages: this.props.messages || [],
-            typing  : null,
-            notification:'',
-            groupList:[],
-            groupMessages:[]
+            typing: null,
+            notification: '',
+            groupList: [],
+            groupMessages: []
         };
-        socket.on('message', msg=>{
+        socket.on('message', msg=> {
             this.setState({
                 messages: msg.reverse(),
                 typing: null
             });
         });
-        socket.on('typing', user=>{
+        socket.on('typing', user=> {
             this.setState({
                 typing: user
             });
         });
-        socket.on('new user', userList=>{
-            userList.users =  userList.users.filter(user=>{
+        socket.on('new user', userList=> {
+            userList.users = userList.users.filter(user=> {
                 return user._id != this.props.user._id
             });
             this.setState({
                 userList: userList.users
             });
         });
-        socket.on('group message',  data=>{
+        socket.on('group message', data=> {
             console.log(data)
         });
-        socket.on('group-message', data=>{
+        socket.on('group-message', data=> {
             this.setState({
                 groupMessages: data.reverse()
             })
         });
-        socket.on('new group',  data=>{
+        socket.on('new group', data=> {
             console.log(data)
             console.log(this.props.user._id)
-            let a = Object.keys(data.groupList).filter(k=>{
+            let a = Object.keys(data.groupList).filter(k=> {
                 return data.groupList[k].users.indexOf(this.props.user._id) < 0
             });
             console.log(a)
             this.setState({
-                notification:data.notification,
+                notification: data.notification,
                 groupList: data.groupList//{_id:ddd,name:lll}
             });
-            setTimeout(()=>{
+            setTimeout(()=> {
                 this.setState({
-                    notification:''
+                    notification: ''
                 });
             }, 5000)
         })
     }
-    _typing () {
-        socket.emit('typing', {user:this.props.user})
+
+    _typing() {
+        socket.emit('typing', {user: this.props.user})
     }
+
     _send() {
         const message = $('#message').val().trim();
-        if(message) {
-            socket.emit('message', {message:message,user:this.props.user})
+        if (message) {
+            socket.emit('message', {message: message, user: this.props.user})
             $('#message').val('');
         }
     }
+
     _createGroup() {
-        let users = [];
+        let users     = [];
         $('#users input:checked').each((id, user) => {
             users.push($(user).attr('id'));
         });
         console.log(users);
         let groupName = $('#groupName').val();
-        socket.emit('createGroup', {groupName:groupName, users:users})
+        socket.emit('createGroup', {groupName: groupName, users: users})
         $('#groupName').val('');
         $('#users input:checked').prop('checked', false);
     }
+
     _sendGroup() {
         const message = $('#group-message').val().trim();
         const groupId = $('#group-id').val();
-        if(message) {
-            socket.emit('group-message', {message:message,user:this.props.user, groupId:groupId});
+        if (message) {
+            socket.emit('group-message', {message: message, user: this.props.user, groupId: groupId});
             $('#group-message').val('');
         }
     }
+
     render() {
         return (
             <div className="chat-section">
                 <div style={{float:'left'}}>
-                    <div>{this.state.typing ? this.state.typing.user.username+' is typing...' :'' }</div>
+                    <div>{this.state.typing ? this.state.typing.user.username + ' is typing...' : '' }</div>
                     <div>
                         <textarea
                             type="text"
@@ -136,31 +164,19 @@ class Chat extends React.Component {
                     </div>
                     <div>
                         <div>{this.state.notification}</div>
-                        <ul>
-                            {
-                                this.state.messages.map(msg=>{
-                                    let username = msg.user._id == this.props.user._id ? msg.user.username+'(me)' : msg.user.username;
-                                    return(
-                                        <li key={msg._id}>
-                                            <span>{username}</span><br/>
-                                            <span>{msg.message}</span>
-                                        </li>
-                                    )
-                                })
-                            }
-                        </ul>
+                        <MessageList data={this.state.messages} userId={this.props.user._id}/>
                     </div>
                 </div>
                 <div>
                     <select id="group-id">
-                    {
-                        Object.keys(this.state.groupList).map(key=>{
-                            let group = this.state.groupList[key];
-                            return(
-                                <option key={group._id} value={group._id}>{group.groupName}</option>
-                            )
-                        })
-                    }
+                        {
+                            Object.keys(this.state.groupList).map(key=> {
+                                let group = this.state.groupList[key];
+                                return (
+                                    <option key={group._id} value={group._id}>{group.groupName}</option>
+                                )
+                            })
+                        }
                     </select>
                     <textarea
                         type="text"
@@ -168,28 +184,16 @@ class Chat extends React.Component {
                         label="Type message">
                     </textarea>
                     <button onClick={this._sendGroup.bind(this)}>Send</button>
-                    <ul>
-                        {
-                            this.state.groupMessages.map(msg=>{
-                                let username = msg.user._id == this.props.user._id ? msg.user.username+'(me)' : msg.user.username;
-                                return(
-                                    <li key={msg._id}>
-                                        <span>{username}</span><br/>
-                                        <span>{msg.message}</span>
-                                    </li>
-                                )
-                            })
-                        }
-                    </ul>
+                    <MessageList data={this.state.groupMessages} userId={this.props.user._id}/>
                 </div>
                 <div style={{float:'right'}}>
                     <ul id="users">
                         {
-                            this.state.userList.map(user=>{
+                            this.state.userList.map(user=> {
                                 return (
                                     <li key={user._id}>
                                         <span>{user.username}</span>
-                                        <span><input type="checkbox" id={user._id} /></span>
+                                        <span><input type="checkbox" id={user._id}/></span>
                                     </li>
                                 )
                             })
@@ -206,9 +210,9 @@ class Chat extends React.Component {
 
 }
 
-socket.on('redirectToChat', (data)=>{
+socket.on('redirectToChat', (data)=> {
     //console.log('redirectToChat', data);
-    data.users = data.users.filter(user=>{
+    data.users = data.users.filter(user=> {
         return user._id != data.user._id
     });
     console.log('redirectToChat: ', data.users)

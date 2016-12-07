@@ -116,38 +116,80 @@
 	    return Login;
 	}(_react2.default.Component);
 	
-	var Chat = function (_React$Component2) {
-	    _inherits(Chat, _React$Component2);
+	var MessageList = function (_React$Component2) {
+	    _inherits(MessageList, _React$Component2);
+	
+	    function MessageList(props) {
+	        _classCallCheck(this, MessageList);
+	
+	        return _possibleConstructorReturn(this, (MessageList.__proto__ || Object.getPrototypeOf(MessageList)).call(this, props));
+	    }
+	
+	    _createClass(MessageList, [{
+	        key: 'render',
+	        value: function render() {
+	            var _this3 = this;
+	
+	            return _react2.default.createElement(
+	                'ul',
+	                null,
+	                this.props.data.map(function (msg) {
+	                    var username = msg.user._id == _this3.props.userId ? msg.user.username + '(me)' : msg.user.username;
+	                    return _react2.default.createElement(
+	                        'li',
+	                        { key: msg._id },
+	                        _react2.default.createElement(
+	                            'span',
+	                            null,
+	                            username
+	                        ),
+	                        _react2.default.createElement('br', null),
+	                        _react2.default.createElement(
+	                            'span',
+	                            null,
+	                            msg.message
+	                        )
+	                    );
+	                })
+	            );
+	        }
+	    }]);
+	
+	    return MessageList;
+	}(_react2.default.Component);
+	
+	var Chat = function (_React$Component3) {
+	    _inherits(Chat, _React$Component3);
 	
 	    function Chat(props) {
 	        _classCallCheck(this, Chat);
 	
-	        var _this2 = _possibleConstructorReturn(this, (Chat.__proto__ || Object.getPrototypeOf(Chat)).call(this, props));
+	        var _this4 = _possibleConstructorReturn(this, (Chat.__proto__ || Object.getPrototypeOf(Chat)).call(this, props));
 	
-	        _this2.state = {
-	            userList: _this2.props.userList,
-	            messages: _this2.props.messages || [],
+	        _this4.state = {
+	            userList: _this4.props.userList,
+	            messages: _this4.props.messages || [],
 	            typing: null,
 	            notification: '',
 	            groupList: [],
 	            groupMessages: []
 	        };
 	        socket.on('message', function (msg) {
-	            _this2.setState({
+	            _this4.setState({
 	                messages: msg.reverse(),
 	                typing: null
 	            });
 	        });
 	        socket.on('typing', function (user) {
-	            _this2.setState({
+	            _this4.setState({
 	                typing: user
 	            });
 	        });
 	        socket.on('new user', function (userList) {
 	            userList.users = userList.users.filter(function (user) {
-	                return user._id != _this2.props.user._id;
+	                return user._id != _this4.props.user._id;
 	            });
-	            _this2.setState({
+	            _this4.setState({
 	                userList: userList.users
 	            });
 	        });
@@ -155,28 +197,28 @@
 	            console.log(data);
 	        });
 	        socket.on('group-message', function (data) {
-	            _this2.setState({
+	            _this4.setState({
 	                groupMessages: data.reverse()
 	            });
 	        });
 	        socket.on('new group', function (data) {
 	            console.log(data);
-	            console.log(_this2.props.user._id);
+	            console.log(_this4.props.user._id);
 	            var a = Object.keys(data.groupList).filter(function (k) {
-	                return data.groupList[k].users.indexOf(_this2.props.user._id) < 0;
+	                return data.groupList[k].users.indexOf(_this4.props.user._id) < 0;
 	            });
 	            console.log(a);
-	            _this2.setState({
+	            _this4.setState({
 	                notification: data.notification,
 	                groupList: data.groupList //{_id:ddd,name:lll}
 	            });
 	            setTimeout(function () {
-	                _this2.setState({
+	                _this4.setState({
 	                    notification: ''
 	                });
 	            }, 5000);
 	        });
-	        return _this2;
+	        return _this4;
 	    }
 	
 	    _createClass(Chat, [{
@@ -219,7 +261,7 @@
 	    }, {
 	        key: 'render',
 	        value: function render() {
-	            var _this3 = this;
+	            var _this5 = this;
 	
 	            return _react2.default.createElement(
 	                'div',
@@ -254,28 +296,7 @@
 	                            null,
 	                            this.state.notification
 	                        ),
-	                        _react2.default.createElement(
-	                            'ul',
-	                            null,
-	                            this.state.messages.map(function (msg) {
-	                                var username = msg.user._id == _this3.props.user._id ? msg.user.username + '(me)' : msg.user.username;
-	                                return _react2.default.createElement(
-	                                    'li',
-	                                    { key: msg._id },
-	                                    _react2.default.createElement(
-	                                        'span',
-	                                        null,
-	                                        username
-	                                    ),
-	                                    _react2.default.createElement('br', null),
-	                                    _react2.default.createElement(
-	                                        'span',
-	                                        null,
-	                                        msg.message
-	                                    )
-	                                );
-	                            })
-	                        )
+	                        _react2.default.createElement(MessageList, { data: this.state.messages, userId: this.props.user._id })
 	                    )
 	                ),
 	                _react2.default.createElement(
@@ -285,7 +306,7 @@
 	                        'select',
 	                        { id: 'group-id' },
 	                        Object.keys(this.state.groupList).map(function (key) {
-	                            var group = _this3.state.groupList[key];
+	                            var group = _this5.state.groupList[key];
 	                            return _react2.default.createElement(
 	                                'option',
 	                                { key: group._id, value: group._id },
@@ -302,28 +323,7 @@
 	                        { onClick: this._sendGroup.bind(this) },
 	                        'Send'
 	                    ),
-	                    _react2.default.createElement(
-	                        'ul',
-	                        null,
-	                        this.state.groupMessages.map(function (msg) {
-	                            var username = msg.user._id == _this3.props.user._id ? msg.user.username + '(me)' : msg.user.username;
-	                            return _react2.default.createElement(
-	                                'li',
-	                                { key: msg._id },
-	                                _react2.default.createElement(
-	                                    'span',
-	                                    null,
-	                                    username
-	                                ),
-	                                _react2.default.createElement('br', null),
-	                                _react2.default.createElement(
-	                                    'span',
-	                                    null,
-	                                    msg.message
-	                                )
-	                            );
-	                        })
-	                    )
+	                    _react2.default.createElement(MessageList, { data: this.state.groupMessages, userId: this.props.user._id })
 	                ),
 	                _react2.default.createElement(
 	                    'div',
