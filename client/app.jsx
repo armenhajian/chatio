@@ -152,7 +152,7 @@ class Chat extends React.Component {
                     </div>
                 </div>
                 <div>
-                    <select id="group-id" onChange=_selectGroup>
+                    <select id="group-id">
                     {
                         Object.keys(this.state.groupList).map(key=>{
                             let group = this.state.groupList[key];
