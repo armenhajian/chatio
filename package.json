@@ -1,6 +1,12 @@
 {
   "name": "chat.io",
   "version": "0.1.1",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:armenhajian/chatio.git"
+  },
+  "author": "Armen Hajian <rmenhajian@gmail.com>",
+  "license": "MIT",
   "scripts": {
     "dev": "./node_modules/.bin/webpack -d --watch",
     "build": "./node_modules/.bin/webpack -p",
